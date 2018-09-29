@@ -1,9 +1,7 @@
 # Unity Twitch Chat 
 This is a handmade library to connect Unity with Twich Chat Api, easy to use and easy to understand
 
-<blockquote class="twitter-tweet" data-lang="es"><p lang="es" dir="ltr">He integrado a Pequeñin con Unity<a href="https://twitter.com/hashtag/Gamedev?src=hash&amp;ref_src=twsrc%5Etfw">#Gamedev</a> <a href="https://twitter.com/hashtag/Indiedev?src=hash&amp;ref_src=twsrc%5Etfw">#Indiedev</a> <a href="https://t.co/JdHgyrxMWm">pic.twitter.com/JdHgyrxMWm</a></p>&mdash; Hector Pulido (@Hector_Pulido_) <a href="https://twitter.com/Hector_Pulido_/status/997747627021295618?ref_src=twsrc%5Etfw">19 de mayo de 2018</a></blockquote>
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
+![Test twitch chat](/Images/Test.gif)<br/>
 
 ## TODO
 * More Examples of use
