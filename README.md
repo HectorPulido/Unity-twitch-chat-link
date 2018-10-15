@@ -3,6 +3,13 @@ This is a handmade library to connect Unity with Twich Chat Api, easy to use and
 
 ![Test twitch chat](/Images/Test.gif)<br/>
 
+## WHY (MOTIVATION)
+[![Banner](http://img.youtube.com/vi/wMvDKGSOsgA/0.jpg)](https://www.youtube.com/watch?v=wMvDKGSOsgA)<br/>
+This tutorial was made for <b>Hector Pulido</b> for his youtube channel <br/>
+https://www.youtube.com/c/HectorAndresPulidoPalmar <br/>
+And his Twitch Channel<br/>
+https://goo.gl/otWsda (Hector_Pulido_)<br/>
+
 ## TODO
 * More Examples of use
 
