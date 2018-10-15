@@ -10,50 +10,42 @@ This is a handmade library to connect Unity with Twich Chat Api, easy to use and
 1. First of anything make sure you have a twitch acount 
 2. You will need a OAUTH Key from Twitch https://twitchapps.com/tmi/
 3. Just Code what do you need just like this
+4. List of tags https://dev.twitch.tv/docs/irc/tags/
 
 ### Rotating cube
 This example switch a cube rotation depending of the Twitch chat and the commands !stop and !continue
 ```C#
-    public string channel;
-    public string oauth;
-    public string username;
-
-    public Transform cube;
-    public bool rotating;
-
-    Bot bot;
-
-    private void Update()
+    using TwitchBot;
+    using CielaSpike; //You have to import this two namespaces
+    public class ConnectTest : UnityBot //You have to inherit from UnityBot
     {
-        if(rotating)
-            cube.localEulerAngles += new Vector3(0, 0, 360) * Time.deltaTime;
-    }
+        public Transform cube;
+        public bool rotating;
+        public int maxRetry;
 
-    private void Start()
-    {
-        this.StartCoroutineAsync(StartBot());
-    }
+        void Start()
+        {
+            commands = new Dictionary<string, BotCommand>();
+            commands.Add("!stop", new BotCommand((a,b) => { rotating = false; })); 
+            //Command bots has 2 Arguments, the first one is an array of arguments, its basically a list of words after the command
+            //The other one it's all the information tags, you can see all tag list above in #how to use
+            //A usefull tag is "display-name", use it like this var username = b["display-name"].ToLower();
+            commands.Add("!continue", new BotCommand((a, b) => { rotating = true; }));
 
-    IEnumerator StartBot()
-    {
-        yield return Ninja.JumpBack;
+            whenNewMessage += (username, message) => Debug.Log($"{username}: {message}");
+            whenNewSystemMessage += (message) => Debug.Log($"System: {message}");
+            whenDisconnect += () => Debug.Log("Desconexion");
+            whenStart += () => Debug.Log("Conexion");
+            whenNewChater += (username) => SendMessageToChat($"{username}, bienvenido al stream!");
 
-        Dictionary<string, BotCommand> commands = new Dictionary<string, BotCommand>();
-        commands.Add("!stop", new BotCommand((a,b) => { rotating = false; }));
-        commands.Add("!continue", new BotCommand((a, b) => { rotating = true; }));
+            this.StartCoroutineAsync(StartConnection(maxRetry));
+        }
 
-        bot = new Bot(username,
-                       oauth,
-                       channel,
-                       commands);
-
-        bot.whenNewMessage += (username, message) => Debug.Log($"{username}: {message}");
-        bot.whenNewSystemMessage += (message) => Debug.Log($"System: {message}");
-        bot.whenDisconnect += () => Debug.Log("Desconexion");
-        bot.whenStart += () => Debug.Log("Conexion");
-        bot.whenNewChater += (username) => bot.SendMessage($"{username}, bienvenido al stream!");
-
-        bot.StartBot(99);
+        private void Update()
+        {
+            if(rotating)
+                cube.localEulerAngles += new Vector3(0, 0, 360) * Time.deltaTime;
+        }
     }
 ```
 

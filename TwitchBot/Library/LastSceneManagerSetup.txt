@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/Scenes/ConnectionTest.unity
+- path: Assets/Examples/ConectionTest/ConnectionTest.unity
   isLoaded: 1
   isActive: 1

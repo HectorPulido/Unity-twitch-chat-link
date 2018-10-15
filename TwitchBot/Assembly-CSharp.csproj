@@ -53,26 +53,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Examples\ConectionTest\ConnectTest.cs" />
+     <Compile Include="Assets\Examples\Spawner\ConectionSpawner.cs" />
      <Compile Include="Assets\Scripts\AddOns\CielaSpike\Thread Ninja\Example\ExampleScript.cs" />
      <Compile Include="Assets\Scripts\AddOns\CielaSpike\Thread Ninja\Ninja.cs" />
      <Compile Include="Assets\Scripts\AddOns\CielaSpike\Thread Ninja\Task.cs" />
      <Compile Include="Assets\Scripts\AddOns\CielaSpike\Thread Ninja\TaskState.cs" />
      <Compile Include="Assets\Scripts\AddOns\CielaSpike\Thread Ninja\ThreadNinjaMonoBehaviourExtensions.cs" />
-     <Compile Include="Assets\Scripts\Connect\ConnectTest.cs" />
-     <Compile Include="Assets\Scripts\Core\App.cs" />
-     <Compile Include="Assets\Scripts\Core\Bot.cs" />
      <Compile Include="Assets\Scripts\Core\Command.cs" />
+     <Compile Include="Assets\Scripts\Core\UnityBot.cs" />
  <Reference Include="UnityEditor.StandardEvents">
- <HintPath>C:/Users/ASUS/Downloads/TwitchBot/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
- </Reference>
- <Reference Include="Unity.PackageManagerUI.Editor">
- <HintPath>C:/Users/ASUS/Downloads/TwitchBot/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
+ <HintPath>C:/Users/ASUS/Downloads/FromGithub/Unity-twitch-chat-link/TwitchBot/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
  </Reference>
  <Reference Include="Unity.TextMeshPro.Editor">
- <HintPath>C:/Users/ASUS/Downloads/TwitchBot/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+ <HintPath>C:/Users/ASUS/Downloads/FromGithub/Unity-twitch-chat-link/TwitchBot/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+ </Reference>
+ <Reference Include="Unity.PackageManagerUI.Editor">
+ <HintPath>C:/Users/ASUS/Downloads/FromGithub/Unity-twitch-chat-link/TwitchBot/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.TextMeshPro">
- <HintPath>C:/Users/ASUS/Downloads/TwitchBot/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+ <HintPath>C:/Users/ASUS/Downloads/FromGithub/Unity-twitch-chat-link/TwitchBot/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.AIModule">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
@@ -272,14 +272,8 @@
  <Reference Include="UnityEngine.SpatialTracking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
  </Reference>
- <Reference Include="UnityEngine.Advertisements">
- <HintPath>C:/Users/ASUS/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.ads@2.0.8/UnityEngine.Advertisements.dll</HintPath>
- </Reference>
  <Reference Include="UnityEngine.Analytics">
  <HintPath>C:/Users/ASUS/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.analytics@2.0.16/UnityEngine.Analytics.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.Purchasing">
- <HintPath>C:/Users/ASUS/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.purchasing@2.0.3/UnityEngine.Purchasing.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.StandardEvents">
  <HintPath>C:/Users/ASUS/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.standardevents@1.0.13/UnityEngine.StandardEvents.dll</HintPath>
