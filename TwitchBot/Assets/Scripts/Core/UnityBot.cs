@@ -9,24 +9,29 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-//using System.Threading.Tasks;
 
 namespace TwitchBot
 {
-	public class UnityBot : MonoBehaviour 
-	{
-		const string server = "irc.chat.twitch.tv";
+    public class UnityBot : MonoBehaviour
+    {
+        const string server = "irc.chat.twitch.tv";
         const int port = 6667;
-		public string username, password, channel;
-		protected List<string> Users = new List<string>();
-        protected Action<string, string> whenNewMessage;
+        public string username, oauth, channel;
+        protected List<string> Users = new List<string>();
+        protected Action<Message> whenNewMessage;
+        protected Action<Message> whenSub;
+        protected Action<Message> whenResub;
+        protected Action<Message> whenRaid;
+        protected Action<Message> whenSubfift;
+        protected Action<Message> whenBits;
         protected Action<string> whenNewSystemMessage;
         protected Action<string> whenNewChater;
-		protected Action whenStart;
-		protected Action whenDisconnect;
-		protected Dictionary<string, BotCommand> commands;
+        protected Action whenStart;
+        protected Action whenDisconnect;
+        protected Dictionary<string, BotCommand> commands;
+        protected Dictionary<string, BotCommand> customRewards;
 
-		bool open = false;
+        bool open = false;
         StreamReader reader;
         StreamWriter writer;
 
@@ -39,6 +44,7 @@ namespace TwitchBot
             writer.WriteLine(message);
             writer.Flush();
         }
+
         public void SendMessageToChat(string message)
         {
             if (open == false)
@@ -48,151 +54,186 @@ namespace TwitchBot
             //whenNewMessage(username, message);
         }
 
-		public IEnumerator StartConnection(int maxRetry)
-		{			
-			yield return Ninja.JumpToUnity;
+        public IEnumerator StartConnection(int maxRetry)
+        {
+            yield return Ninja.JumpToUnity;
             var retryCount = 0;
-			while(retryCount <= maxRetry)
-			{
-				Task gettingDataTask;
-				yield return this.StartCoroutineAsync(GettingData(), out gettingDataTask); 
-				if (gettingDataTask.State == TaskState.Error) 
-				{    
-					var e = gettingDataTask.Exception;
-					open = false;
-					whenDisconnect.Invoke();
-					whenNewSystemMessage.Invoke($"Error reconecting {retryCount}/{maxRetry}");
-					whenNewSystemMessage.Invoke($"{e.ToString()}");
+            while (retryCount <= maxRetry)
+            {
+                Task gettingDataTask;
+                yield return this.StartCoroutineAsync(GettingData(), out gettingDataTask);
+                if (gettingDataTask.State == TaskState.Error)
+                {
+                    var e = gettingDataTask.Exception;
+                    open = false;
+                    whenDisconnect.Invoke();
+                    whenNewSystemMessage.Invoke($"Error reconecting {retryCount}/{maxRetry}");
+                    whenNewSystemMessage.Invoke($"{e.ToString()}");
 
-					//Thread.Sleep(5000);
-					retryCount++;
-				}
-			}
-		}
+                    //Thread.Sleep(5000);
+                    retryCount++;
+                }
+            }
+        }
 
-		IEnumerator GettingData()
-		{
-			using (var irc = new TcpClient(server, port))
-			using (var stream = irc.GetStream())
-			using (reader = new StreamReader(stream))
-			using (writer = new StreamWriter(stream))
-			{
-				open = true;
+        IEnumerator GettingData()
+        {
+            using (var irc = new TcpClient(server, port))
+            using (var stream = irc.GetStream())
+            using (reader = new StreamReader(stream))
+            using (writer = new StreamWriter(stream))
+            {
+                open = true;
 
-				if(password.Contains("oauth:"))
-					password = password.Replace("oauth:", "");
+                if (oauth.Contains("oauth:"))
+                    oauth = oauth.Replace("oauth:", "");
 
-				Send("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
-				Send(string.Format("PASS oauth:{0}", password));
-				Send(string.Format("NICK {0}", username));
-				Send(string.Format("JOIN #{0}", channel));
-				
-				yield return Ninja.JumpToUnity;
-				whenStart.Invoke();
-				yield return Ninja.JumpBack;
+                Send("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
+                Send(string.Format("PASS oauth:{0}", oauth));
+                Send(string.Format("NICK {0}", username));
+                Send(string.Format("JOIN #{0}", channel));
 
-				while (true)
-				{
-					string inputLine;
-					while ((inputLine = reader.ReadLine()) != null)
-					{
-						yield return Ninja.JumpToUnity;
-						yield return this.StartCoroutineAsync(Parse(inputLine));
-						yield return Ninja.JumpBack;
-						//; //Process
-					}
-				}
-			}
-		}
+                yield return Ninja.JumpToUnity;
+                whenStart.Invoke();
+                yield return Ninja.JumpBack;
 
-		IEnumerator Parse(string inputLine)
-        {          
+                while (true)
+                {
+                    string inputLine;
+                    while ((inputLine = reader.ReadLine()) != null)
+                    {
+                        yield return Ninja.JumpToUnity;
+                        yield return this.StartCoroutineAsync(Parse(inputLine));
+                        yield return Ninja.JumpBack;
+                    }
+                }
+            }
+        }
+
+        IEnumerator Parse(string inputLine)
+        {
             if (inputLine.Contains("PING"))
             {
                 Send("PONG :tmi.twitch.tv");
             }
-            if (inputLine.Contains("PRIVMSG"))
+            else if (inputLine.Contains("PRIVMSG"))
             {
                 // Mensaje en el chat
-                string[] splitInput = inputLine.Split(new string[] { ";" }, StringSplitOptions.None);
-                Dictionary<string, string> message = new Dictionary<string, string>();
+                var msg = Message.Format(inputLine, "PRIVMSG");
 
-                for (int i = 0; i < splitInput.Length; i++)
+                // Bits
+                if (msg.message_data.ContainsKey("bits") && whenBits != null)
                 {
-                    string[] splitZone = splitInput[i].Split('=');
-                    message.Add(splitZone[0], splitZone[1]);
+                    yield return Ninja.JumpToUnity;
+                    whenBits.Invoke(msg);
+                    yield return Ninja.JumpBack;
                 }
 
-                string line = message["user-type"];
-                line = line.Split(new string[] { "PRIVMSG" }, StringSplitOptions.None)[1];
-                line = line.Split(new string[] { ":" }, StringSplitOptions.None)[1];
+                // Handle custom rewards 
+                // you can get your custom reward id in
+                // https://www.instafluff.tv/TwitchCustomRewardID/?channel=YOURTWITCHCHANNEL
+                if (
+                    msg.message_data.ContainsKey("custom-reward-id")
+                    && customRewards != null
+                    && customRewards.ContainsKey("custom-reward-id")
+                    )
+                {
+                    yield return Ninja.JumpToUnity;
+                    var args = msg.message.Split(' ');
+                    customRewards[msg.message_data["custom-reward-id"]].Invoke(args, msg);
+                    yield return Ninja.JumpBack;
+                }
 
-                string user = message["display-name"];
+                string user = msg.username;
 
-				yield return Ninja.JumpToUnity;
-                whenNewMessage.Invoke(user, line);
-				yield return Ninja.JumpBack;
+                // Send message callback
+                yield return Ninja.JumpToUnity;
+                whenNewMessage.Invoke(msg);
+                yield return Ninja.JumpBack;
 
-
+                // if user does't exist, create it
                 if (!Users.Contains(user))
                 {
                     Users.Add(user);
-					yield return Ninja.JumpToUnity;
-                    whenNewChater.Invoke(user);
-					yield return Ninja.JumpBack;
+                    if (whenNewChater != null)
+                    {
+                        yield return Ninja.JumpToUnity;
+                        whenNewChater.Invoke(user);
+                        yield return Ninja.JumpBack;
+                    }
                 }
 
-                var commandInLine = line.Split(' ')[0];
-                var args = line.Split(' ');
-                args[0] = "";
-
-                if (message["display-name"].ToLower() == channel.ToLower())
-                    message["mod"] = "1";
-
                 if (commands != null)
-				{
-					yield return Ninja.JumpToUnity;
-					yield return this.StartCoroutineAsync(Process(commandInLine.ToLower(), message, args));
-					yield return Ninja.JumpBack;
-				}
+                {
+                    yield return Ninja.JumpToUnity;
+                    yield return this.StartCoroutineAsync(Process(msg));
+                    yield return Ninja.JumpBack;
+                }
+            }
+            else if (inputLine.Contains("USERNOTICE"))
+            {
+                // Mensaje en el chat
+                var msg = Message.Format(inputLine, "USERNOTICE");
+
+                // Format msg id
+                if (msg.message_data.ContainsKey("msg-id"))
+                {
+                    var msg_type = msg.message_data["msg-id"];
+
+                    if (msg_type == "sub" && whenSub != null)
+                    {
+                        yield return Ninja.JumpToUnity;
+                        whenSub.Invoke(msg);
+                        yield return Ninja.JumpBack;
+                    }
+                    else if (msg_type == "resub" && whenResub != null)
+                    {
+                        yield return Ninja.JumpToUnity;
+                        whenResub.Invoke(msg);
+                        yield return Ninja.JumpBack;
+                    }
+                    else if (msg_type == "raid" && whenRaid != null)
+                    {
+                        yield return Ninja.JumpToUnity;
+                        whenRaid.Invoke(msg);
+                        yield return Ninja.JumpBack;
+                    }
+                    else if (msg_type == "subgift" && whenSubfift != null)
+                    {
+                        yield return Ninja.JumpToUnity;
+                        whenSubfift.Invoke(msg);
+                        yield return Ninja.JumpBack;
+                    }
+                }
             }
             else
             {
-				yield return Ninja.JumpToUnity;
+                yield return Ninja.JumpToUnity;
                 whenNewSystemMessage.Invoke(inputLine);
-				yield return Ninja.JumpBack;
+                yield return Ninja.JumpBack;
             }
-            // DEBUG
-            //Console.WriteLine(inputLine);
         }
-		IEnumerator Process(string commandInLine, Dictionary<string, string> message, string[] args)
+
+        IEnumerator Process(Message msg)
         {
-            if (commands.ContainsKey(commandInLine.ToLower()))
+            var args = msg.message.Split(' ');
+
+            if (commands.ContainsKey(args[0]))
             {
-				var command = commands[commandInLine];
+                var command = commands[args[0]];
 
-				if ((command.modOnly && message["mod"] == "1") || !command.modOnly)
-				{
-					if ((command.subOnly && message["subscriber"] == "1") || !command.subOnly)
-					{
-						yield return Ninja.JumpToUnity;
-						whenNewSystemMessage.Invoke("Ejecutando comando " + commandInLine);
-						yield return Ninja.JumpBack;						
-
-						if (command.typeCommand == TypeCommand.Action)
-						{
-							yield return Ninja.JumpToUnity;
-							command.Invoke(args, message);
-							yield return Ninja.JumpBack;
-						}
-						else if (command.typeCommand == TypeCommand.Text)
-						{
-							var text = command.Text.Replace("{username}", message["display-name"]);
-							SendMessageToChat(text);
-						}
-					}
-				}		
-			}
+                if (command.typeCommand == TypeCommand.Action)
+                {
+                    yield return Ninja.JumpToUnity;
+                    command.Invoke(args, msg);
+                    yield return Ninja.JumpToUnity;
+                }
+                else if (command.typeCommand == TypeCommand.Text)
+                {
+                    var text = command.Text.Replace("{username}", msg.username);
+                    SendMessageToChat(text);
+                }
+            }
         }
-	}
+    }
 }

@@ -11,7 +11,7 @@ namespace TwitchBot
     public class BotCommand
     {
         public string Text;
-        public Action<string[], Dictionary<string, string>> commandScript;
+        public Action<string[], Message> commandScript;
         public TypeCommand typeCommand;
         public bool modOnly;
         public bool subOnly;
@@ -23,7 +23,7 @@ namespace TwitchBot
             this.modOnly = modOnly;
             this.subOnly = subOnly;
         }
-        public BotCommand(Action<string[], Dictionary<string, string>> CommandScript, bool modOnly = false, bool subOnly = false)
+        public BotCommand(Action<string[], Message> CommandScript, bool modOnly = false, bool subOnly = false)
         {
             typeCommand = TypeCommand.Action;
             this.commandScript = CommandScript;
@@ -31,13 +31,19 @@ namespace TwitchBot
             this.subOnly = subOnly;
         }
 
-        public void Invoke(string[] args, Dictionary<string, string> message)
+        public void Invoke(string[] args, Message message)
         {
-            commandScript.Invoke(args, message);
+            if (!this.modOnly || (this.modOnly && message.isMod))
+            {
+                if (!this.subOnly || (this.subOnly && message.isSubscriber))
+                {
+                    commandScript.Invoke(args, message);
+                }
+            }
         }
         public void Invoke()
         {
-            commandScript.Invoke(new string[] { }, null);
+            commandScript.Invoke(new string[] { }, new Message());
         }
     }
 }
