@@ -5,10 +5,7 @@ using CielaSpike;
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 
 namespace TwitchBot
 {
@@ -17,7 +14,7 @@ namespace TwitchBot
         const string server = "irc.chat.twitch.tv";
         const int port = 6667;
         public string username, oauth, channel;
-        protected List<string> Users = new List<string>();
+        protected List<string> Users = new();
         protected Action<Message> whenNewMessage;
         protected Action<Message> whenSub;
         protected Action<Message> whenResub;
@@ -60,15 +57,14 @@ namespace TwitchBot
             var retryCount = 0;
             while (retryCount <= maxRetry)
             {
-                Task gettingDataTask;
-                yield return this.StartCoroutineAsync(GettingData(), out gettingDataTask);
+                yield return this.StartCoroutineAsync(GettingData(), out Task gettingDataTask);
                 if (gettingDataTask.State == TaskState.Error)
                 {
                     var e = gettingDataTask.Exception;
                     open = false;
                     whenDisconnect.Invoke();
                     whenNewSystemMessage.Invoke($"Error reconecting {retryCount}/{maxRetry}");
-                    whenNewSystemMessage.Invoke($"{e.ToString()}");
+                    whenNewSystemMessage.Invoke($"{e}");
 
                     //Thread.Sleep(5000);
                     retryCount++;
