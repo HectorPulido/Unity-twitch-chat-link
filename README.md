@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **This project has moved.** It now lives in [`AwesomeUnityProjects/twitch-chat-link`](https://github.com/HectorPulido/AwesomeUnityProjects/tree/main/twitch-chat-link). This repo is archived and read-only.
+
 # Unity Twitch Chat 
 This is a handmade library to connect Unity with Twich Chat Api, easy to use and easy to understand
 
